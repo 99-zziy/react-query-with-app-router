@@ -2,12 +2,13 @@ const express = require("express");
 const dotenv = require("dotenv");
 const db = require("./models/index");
 const applyDotenv = require("./lambdas/applyDotenv");
+const { Comment } = require("./models/comment");
+const bodyParser = require("body-parser");
 const app = express();
 const port = 4000;
 
-app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`);
-});
+//application/json
+app.use(bodyParser.json());
 
 const { mongoUri } = applyDotenv(dotenv);
 db.mongoose
@@ -23,7 +24,26 @@ db.mongoose
     process.exit();
   });
 
-app.get("/test", (req, res) => {
-  console.log("Hello World!");
-  res.status(200).json({ data: "hello world" });
+app.get("/", (req, res) => {});
+
+app.get("/api/comments", async (req, res) => {
+  console.log("get commnents");
+  const comments = await Comment.find({});
+  console.log("comments", comments);
+  res.status(200).json({ data: comments });
+});
+
+app.post("/api/comments", async (req, res) => {
+  console.log("post comments");
+  const comment = new Comment({
+    text: req.body.text,
+  });
+  const data = await comment.save();
+  console.log("data", data);
+
+  res.status(200).json({ data: comment });
+});
+
+app.listen(port, () => {
+  console.log(`Example app listening at http://localhost:${port}`);
 });
